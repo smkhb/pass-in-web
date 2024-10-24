@@ -4,17 +4,30 @@ import { Table } from "./table/table"
 import { TableHeader } from "./table/table-header"
 import { TableCell } from "./table/table-cell"
 import { TableRow } from "./table-row"
+import { useState } from "react"
+import { attendees } from "../data/attendees"
+import dayjs from "dayjs"
+import relativeTime from "dayjs/plugin/relativeTime"
+import 'dayjs/locale/pt-br'
+
+dayjs.extend(relativeTime).locale('pt-br')
 
 export function Attendee() {
+  const [search, setSearch] = useState('') 
+  function onSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setSearch(event.target.value)
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-3 items-center ">
       <h1 className="text-2xl font-bold">Participantes</h1>
       <div className="px-3 w-72 py-1.5 border border-white/10 rounded-lg flex items-center gap-3">
         <Search className="size-4 text-emerald-300"/>
-        <input className="bg-transparent flex-1 outline-none border-0 p-0 text-sm" placeholder="Buscar participante..." />
+        <input onChange={onSearchChange} className="bg-transparent flex-1 outline-none border-0 p-0 text-sm" placeholder="Buscar participante..." />
       </div>
       </div>
+      {search}
 
       <Table>
         <thead>
@@ -30,21 +43,21 @@ export function Attendee() {
           </tr>
         </thead>
         <tbody>
-          {Array.from({ length: 8 }).map((_, i) =>{
+          {attendees.map((attendee) =>{
             return ( 
-            <TableRow key={i} >
+            <TableRow key={attendee.id} >
               <TableCell>
                 <input type="checkbox" className="size-4 bg-black/20 rounded border border-white/5" />
               </TableCell>
-              <TableCell>1234</TableCell>
+              <TableCell>{attendee.id}</TableCell>
               <TableCell>
                 <div className="flex flex-col gap-1  ">
-                  <span className="font-semibold text-white">Samuel Bernardo</span>
-                  <span>samuel@gmail.com</span>
+                  <span className="font-semibold text-white">{attendee.name}</span>
+                  <span>{attendee.email}</span>
                 </div>
               </TableCell>
-              <TableCell>7 dias atrás</TableCell>
-              <TableCell>3 dias atrás</TableCell>
+              <TableCell>{dayjs().to(attendee.createdAt)}</TableCell>
+              <TableCell>{dayjs().to(attendee.checkedInAt)}</TableCell>
               <TableCell>
                 <IconButton transparent>
                   <MoreHorizontal className="size-4"/>

@@ -20,7 +20,8 @@ interface Attendee {
 }
 
 export function Attendee() {
-  
+
+  const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState(() => {
     const url = new URL(window.location.toString())
     
@@ -58,6 +59,7 @@ export function Attendee() {
     .then((data) => {
       setAttendees(data.attendees)
       setTotalAttendees(data.total)
+      setIsLoading(false)
     })
   }, [page, search])
 
@@ -127,7 +129,29 @@ export function Attendee() {
           </tr>
         </thead>
         <tbody>
-          {attendees.map((attendee) =>{
+          {isLoading 
+          ? Array.from({length: 10}).map((_, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                <input type="checkbox" className="size-4 bg-black/20 rounded border border-white/5" />
+              </TableCell>
+              <TableCell className="text-zinc-400">Carregando...</TableCell>
+              <TableCell>
+                <div className="flex flex-col gap-1  ">
+                  <span className="font-semibold text-zinc-400">Carregando...</span>
+                  <span className="text-zinc-400">Carregando...</span>
+                </div>
+              </TableCell>
+              <TableCell className="text-zinc-400">Carregando...</TableCell>
+              <TableCell className="text-zinc-400">Carregando...</TableCell>
+              <TableCell>
+                <IconButton disabled={page === 1}>
+                  <MoreHorizontal className="size-4"/>
+                </IconButton>
+              </TableCell>
+            </TableRow>
+          ))
+          : attendees.map((attendee) =>{
             return ( 
             <TableRow key={attendee.id} >
               <TableCell>
@@ -154,7 +178,8 @@ export function Attendee() {
               </TableCell>
             </TableRow>
             )
-          })}
+          })
+          }
         </tbody>
         <tfoot>
           <tr>

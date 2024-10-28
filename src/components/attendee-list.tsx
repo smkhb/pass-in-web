@@ -24,25 +24,32 @@ export function Attendee() {
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [attendees, setAttendees] = useState<Attendee[]>([])
-  const [total, setTotal] = useState(1)
+  const [totalAttendees, setTotalAttendees] = useState(1)
   
-  const totalPages = Math.ceil(total / 10)
+  const totalPages = Math.ceil(totalAttendees / 10)
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/events/2c6b43eb-bf38-4f0a-b868-081fa9ec3f27/attendees`, {
-      headers: {
-        'x-api-key': import.meta.env.VITE_API_KEY || '',
-      },
+    const url = new URL(`${import.meta.env.VITE_API_URL}/events/2c6b43eb-bf38-4f0a-b868-081fa9ec3f27/attendees`)
+    
+    url.searchParams.set('pageIndex', String((page - 1)))
+
+    if(search.length > 0){
+      url.searchParams.set('query', search)
+    }
+
+    fetch(url, {
+      headers: {'x-api-key': import.meta.env.VITE_API_KEY || ''}
     })
     .then((response) => response.json())
     .then((data) => {
       setAttendees(data.attendees)
-      setTotal(data.total)
+      setTotalAttendees(data.total)
     })
-  }, [page])
+  }, [page, search])
 
   function onSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
     setSearch(event.target.value)
+    setPage(1)
   }
   
   function nextPage() {
@@ -70,10 +77,13 @@ export function Attendee() {
       <h1 className="text-2xl font-bold">Participantes</h1>
       <div className="px-3 w-72 py-1.5 border border-white/10 rounded-lg flex items-center gap-3">
         <Search className="size-4 text-emerald-300"/>
-        <input onChange={onSearchChange} className="bg-transparent flex-1 outline-none border-0 p-0 text-sm" placeholder="Buscar participante..." />
+        <input 
+          onChange={onSearchChange} 
+          className="bg-transparent flex-1 outline-none border-0 p-0 text-sm focus:ring-0" 
+          placeholder="Buscar participante..." 
+        />
       </div>
       </div>
-      {search}
 
       <Table>
         <thead>
@@ -121,7 +131,7 @@ export function Attendee() {
         <tfoot>
           <tr>
             <TableCell colSpan={3}>
-              Mostrando 10 de {totalPages} participantes
+              Mostrando {attendees.length} de {totalAttendees} participantes
             </TableCell>
             <TableCell className="text-right" colSpan={3}>
               <div className="inline-flex items-center gap-8">
@@ -147,8 +157,4 @@ export function Attendee() {
       </Table>
     </div>
   )
-}
-
-function env(arg0: string): RequestInfo | URL {
-  throw new Error("Function not implemented.")
 }

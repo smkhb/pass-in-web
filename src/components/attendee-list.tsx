@@ -21,8 +21,22 @@ interface Attendee {
 
 export function Attendee() {
   
-  const [search, setSearch] = useState('')
-  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState(() => {
+    const url = new URL(window.location.toString())
+    
+    if (url.searchParams.has('search')) {
+      return url.searchParams.get('search') ?? ''
+    } 
+    return ''
+  })
+  const [page, setPage] = useState(() => {
+    const url = new URL(window.location.toString())
+    
+    if (url.searchParams.has('page')) {
+      return Number(url.searchParams.get('page'))
+    } 
+    return 1
+  })
   const [attendees, setAttendees] = useState<Attendee[]>([])
   const [totalAttendees, setTotalAttendees] = useState(1)
   
@@ -47,28 +61,41 @@ export function Attendee() {
     })
   }, [page, search])
 
+  function setCurrentSearch(search: string) {
+    const url = new URL(window.location.toString())
+    
+    url.searchParams.set('page', String(1))
+    url.searchParams.set('search', search)
+
+    window.history.pushState({}, '', url)
+    setSearch(search)
+  }
+
+  function setCurrentPage(page: number) {
+    const url = new URL(window.location.toString())
+    
+    url.searchParams.set('page', String(page))
+
+    window.history.pushState({}, '', url)
+    setPage(page)
+  }
+
   function onSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setSearch(event.target.value)
+    setCurrentSearch(event.target.value)
     setPage(1)
   }
   
   function nextPage() {
-    setPage(page + 1)
-    if (page >= totalPages) {
-      setPage(totalPages)
-    }
+    setCurrentPage(page + 1)
   }
   function lastPage() {
-    setPage(totalPages)
+    setCurrentPage(totalPages)
   }
   function previousPage() {
-    setPage(page - 1)
-    if (page <= 1) {
-      setPage(1)
-    }
+    setCurrentPage(page - 1)
   }
   function firstPage() {
-    setPage(1)
+    setCurrentPage(1)
   }
 
   return (
@@ -78,7 +105,8 @@ export function Attendee() {
       <div className="px-3 w-72 py-1.5 border border-white/10 rounded-lg flex items-center gap-3">
         <Search className="size-4 text-emerald-300"/>
         <input 
-          onChange={onSearchChange} 
+          onChange={onSearchChange}
+          value={search}
           className="bg-transparent flex-1 outline-none border-0 p-0 text-sm focus:ring-0" 
           placeholder="Buscar participante..." 
         />

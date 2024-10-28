@@ -44,7 +44,7 @@ export function Attendee() {
   const totalPages = Math.ceil(totalAttendees / 10)
 
   useEffect(() => {
-    const url = new URL(`${import.meta.env.VITE_API_URL}/events/2c6b43eb-bf38-4f0a-b868-081fa9ec3f27/attendees`)
+    const url = new URL(`${import.meta.env.VITE_API_URL}/events/${import.meta.env.VITE_EVENT_ID}/attendees`)
     
     url.searchParams.set('pageIndex', String((page - 1)))
 

@@ -4,23 +4,47 @@ import { Table } from "./table/table"
 import { TableHeader } from "./table/table-header"
 import { TableCell } from "./table/table-cell"
 import { TableRow } from "./table-row"
-import { useState } from "react"
-import { attendees } from "../data/attendees"
+import { useEffect, useState } from "react"
+import 'dayjs/locale/pt-br'
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
-import 'dayjs/locale/pt-br'
 
 dayjs.extend(relativeTime).locale('pt-br')
 
+interface Attendee {
+  id: string
+  name: string
+  email: string
+  createAt: string
+  checkInAt: string | null
+}
+
 export function Attendee() {
   
-  const [search, setSearch] = useState('') 
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [attendees, setAttendees] = useState<Attendee[]>([])
+  const [total, setTotal] = useState(1)
+  
+  const totalPages = Math.ceil(total / 10)
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL}/events/2c6b43eb-bf38-4f0a-b868-081fa9ec3f27/attendees`, {
+      headers: {
+        'x-api-key': import.meta.env.VITE_API_KEY || '',
+      },
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      setAttendees(data.attendees)
+      setTotal(data.total)
+    })
+  }, [page])
+
   function onSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
     setSearch(event.target.value)
   }
   
-  const totalPages = attendees.length / 10
-  const [page, setPage] = useState(1)
   function nextPage() {
     setPage(page + 1)
     if (page >= totalPages) {
@@ -65,7 +89,7 @@ export function Attendee() {
           </tr>
         </thead>
         <tbody>
-          {attendees.slice((page - 1)* 10, page * 10).map((attendee) =>{
+          {attendees.map((attendee) =>{
             return ( 
             <TableRow key={attendee.id} >
               <TableCell>
@@ -78,8 +102,13 @@ export function Attendee() {
                   <span>{attendee.email}</span>
                 </div>
               </TableCell>
-              <TableCell>{dayjs().to(attendee.createdAt)}</TableCell>
-              <TableCell>{dayjs().to(attendee.checkedInAt)}</TableCell>
+              <TableCell>{dayjs().to(attendee.createAt)}</TableCell>
+              <TableCell>
+                {attendee.checkInAt === null 
+                  ? <span className="text-zinc-400">Não fez check-in</span> 
+                  : dayjs().to(attendee.checkInAt)
+                }
+              </TableCell>
               <TableCell>
                 <IconButton transparent>
                   <MoreHorizontal className="size-4"/>
@@ -96,7 +125,7 @@ export function Attendee() {
             </TableCell>
             <TableCell className="text-right" colSpan={3}>
               <div className="inline-flex items-center gap-8">
-                <span>Página {page} de {Math.ceil(totalPages)}</span>
+                <span>Página {page} de {(totalPages)}</span>
                 <div className="flex gap-1.5">
                   <IconButton onClick={firstPage} disabled={page === 1}>
                     <ChevronsLeft className="size-4"/>
@@ -118,4 +147,8 @@ export function Attendee() {
       </Table>
     </div>
   )
+}
+
+function env(arg0: string): RequestInfo | URL {
+  throw new Error("Function not implemented.")
 }

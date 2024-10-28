@@ -71,6 +71,7 @@ export function Attendee() {
 
     window.history.pushState({}, '', url)
     setSearch(search)
+    setIsLoading(true)
   }
 
   function setCurrentPage(page: number) {
@@ -80,6 +81,7 @@ export function Attendee() {
 
     window.history.pushState({}, '', url)
     setPage(page)
+    setIsLoading(true)
   }
 
   function onSearchChange(event: React.ChangeEvent<HTMLInputElement>) {
